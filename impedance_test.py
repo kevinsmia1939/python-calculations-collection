@@ -2,27 +2,36 @@ from impedance import preprocessing
 from impedance.models.circuits import CustomCircuit
 import matplotlib.pyplot as plt
 from impedance.visualization import plot_nyquist
-# Load data from the example EIS data
-frequencies, Z = preprocessing.readCSV('impedance_py/data/exampleData.csv')
 
-# keep only the impedance data in the first quandrant
-frequencies, Z = preprocessing.ignoreBelowX(frequencies, Z)
 
-circuit = 'R0-p(R1,C1)-p(R2-Wo1,C2)'
-initial_guess = [.01, .01, 100, .01, .05, 100, 1]
+eis_file = 'data/Group 3/EIS_V3_65ml_e4.par'
 
-circuit = CustomCircuit(circuit, initial_guess=initial_guess)
+frequencies, z = preprocessing.readVersaStudio(eis_file)
 
-circuit.fit(frequencies, Z)
+# # keep only the impedance data in the first quandrant
+frequencies, z = preprocessing.ignoreBelowX(frequencies, z)
 
-Z_fit = circuit.predict(frequencies)
+# circuit = 'R0-p(R1-Wo0,C0)-Wo1'
+# circuit = 'R0-p(R1-Wo0,C0)-Wo1'
+# circuit = 'R0-p(R1,C0)'
+circuit2 = 'R0-p(R1-Wo0,CPE0)-Wo1'
+# circuit2 = 'R0-p(R1,C0)-Wo1'
+initial_guess = [1.483e+00, 1.9e-01, 5.70e+02, 3.79e+04, 3.63e-04, 1, 5.34e+02, 3.17e+04]
+# initial_guess = [1.5e+00, 2e-01, 3e-02]
 
-fig, ax = plt.subplots()
-plot_nyquist(ax, Z, fmt='o')
-plot_nyquist(ax, Z_fit, fmt='-')
+circuit = CustomCircuit(circuit2, initial_guess=initial_guess)
+
+circuit.fit(frequencies, z)
+
+z_fit = circuit.predict(frequencies)
+
+fig, ax = plt.subplots(figsize=(10,10))
+# plt.xlim(left=0,right=np.ceil(max(z.real)*0.1)/0.1)
+# plt.ylim(top=np.ceil(max(np.abs(z.imag))*0.1)/0.1)
+plot_nyquist(ax, z,fmt='o')
+plot_nyquist(ax, z_fit, fmt='-')
 
 plt.legend(['Data', 'Fit'])
 plt.show()
 
-# circuit.fit(f, Z)
 print(circuit)
